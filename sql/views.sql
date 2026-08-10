@@ -77,12 +77,22 @@ LIMIT 8;
 --VW_ESTILOS_GOL
 --------------------------------------------------------------------------
 CREATE OR REPLACE VIEW vw_estilos_gol AS 
-SELECT  
-	gol.estilo,
+WITH estilo_gol AS (
+	SELECT
+	CASE
+		WHEN gol.estilo = 'Pé Direito' THEN 'Pé Direito'
+		WHEN gol.estilo = 'Pé Esquerdo' THEN 'Pé Esquerdo'
+		WHEN gol.estilo = 'Cabeça' THEN 'Cabeça'
+		WHEN gol.estilo NOT IN ('Pé Direito', 'Pé Esquerdo', 'Cabeça') THEN 'Outros'
+	END AS info
+FROM fato_gols gol 
+)
+SELECT
+	info AS estilo, 
 	COUNT(*) QTD_GOL
-FROM fato_gols gol
+FROM estilo_gol
 GROUP BY
-	gol.estilo
+	info
 ORDER BY qtd_gol DESC
 LIMIT 5;
 
@@ -92,39 +102,51 @@ LIMIT 5;
 --------------------------------------------------------------------------
 CREATE OR REPLACE VIEW vw_tempos_jogo AS 
 SELECT
-	gol.tempo AS TEMPO,
-	COUNT(*) AS QTD_GOL
-FROM fato_gols gol
-GROUP BY
-	gol.tempo
-ORDER BY gol.tempo ASC;
-
+    tempo AS tempo,
+    'Marcado' AS tipo_gol,
+    COUNT(*) FILTER (WHERE tipo = 'MARCADO') AS qtd_gol
+FROM fato_gols
+GROUP BY tempo
+UNION ALL
+SELECT
+    tempo AS tempo,
+    'Sofrido' AS tipo_gol,
+    COUNT(*) FILTER (WHERE tipo = 'SOFRIDO') AS qtd_gol
+FROM fato_gols
+GROUP BY tempo
+ORDER BY tempo asc; 
 
 --------------------------------------------------------------------------
 --VW_SETORES
 --------------------------------------------------------------------------
 CREATE OR REPLACE VIEW vw_setores AS 
 SELECT
-	gol.setor AS TEMPO,
-	COUNT(*) AS QTD_GOL
-FROM fato_gols gol
-GROUP BY
-	gol.setor
-ORDER BY gol.setor ASC;
-
+    setor AS setor,
+    'Marcado' AS tipo_gol,
+    COUNT(*) FILTER (WHERE tipo = 'MARCADO') AS qtd_gol
+FROM fato_gols
+GROUP BY setor
+UNION ALL
+SELECT
+    setor AS setor,
+    'Sofrido' AS tipo_gol,
+    COUNT(*) FILTER (WHERE tipo = 'SOFRIDO') AS qtd_gol
+FROM fato_gols
+GROUP BY setor;  
 
 --------------------------------------------------------------------------
 --VW_DUPLAS
 --------------------------------------------------------------------------
 CREATE OR REPLACE VIEW vw_duplas AS 
 SELECT
-	gol.jogador,
 	gol.assistencia,
-	count(*) AS qtd_gol
+	'→' AS "seta",
+	gol.jogador AS artilheiro,
+	count(*) AS qtd_gol,
+	row_number() OVER (ORDER BY count(*) DESC, gol.assistencia asc) AS ranking
 FROM fato_gols gol
 WHERE gol.assistencia NOT IN ('(Pênalti)', 'X', '(Falta)')
 GROUP BY 
 	gol.jogador,
 	gol.assistencia
-ORDER BY qtd_gol DESC
 LIMIT 6;
