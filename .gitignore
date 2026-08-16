@@ -1,0 +1,14 @@
+#Credenciais
+.env
+
+#Dados baixados/gerados
+data/raw*
+data/processed*
+
+#Python
+__pycache__/
+*.pyc 
+*.pyo
+.venv/
+venv/
+env/
