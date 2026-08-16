@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS fato_escalacoes;
-DROP TABLE IF EXISTS fato_gols;
-DROP TABLE IF EXISTS dim_jogadores;
-DROP TABLE IF EXISTS dim_jogos;
+DROP TABLE IF EXISTS fato_escalacoes CASCADE;
+DROP TABLE IF EXISTS fato_gols CASCADE;
+DROP TABLE IF EXISTS dim_jogadores CASCADE;
+DROP TABLE IF EXISTS dim_jogos CASCADE;
 
 CREATE TABLE dim_jogos (
     jogo_id                 INTEGER PRIMARY KEY,
